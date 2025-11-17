@@ -2,7 +2,7 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { SignupPage, LoginPage, UserPage } from '../views/login'
+import { SignupPage, LoginPage, UserPage } from '../views/user'
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 function App() {
@@ -12,7 +12,8 @@ function App() {
         <nav>
           <Link to="/">Home</Link> | 
           <Link to="signup"> Signup</Link> | 
-          <Link to="login"> Login</Link>
+          <Link to="login"> Login</Link> |
+          <Link to="user"> Profile</Link>
         </nav>
         <Routes>
           <Route path="/" element={<div/>} />

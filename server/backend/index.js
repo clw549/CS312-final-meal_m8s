@@ -66,30 +66,53 @@ app.post("/login", async(req,res) => {
         success = true;
         session.username = user.username;
         session.user_id = user.id;
-        console.log(req.session.username);
+        console.log(session.username);
       }
   } catch (err) {
     console.log(err);
   }
+  console.log("login end");
   res.json(user);
 })
 
+//gets the current user session and sends it as json
 app.get("/user", async (req,res) => {
   let user = session.username;
   let id = session.user_id;
-  console.log("User requested:")
+  console.log("User requested:");
   console.log(user);
+
+  res.json({
+    user:{username:user, id:id}
+  });
+  console.log("user end");
+})
+
+//gets recipes off of user id
+app.get("/users-recipes", async(req,res) => {
+  var user = {id:session.user_id, username:session.username};
+  var recipes = await pool.query("SELECT * FROM meals WHERE poster_id=?", [user.id]);
+  console.log(recipes);
+
+  recipes = recipes[0];
+
+  res.json({recipes, user});
+  console.log("end of user-recipes")
+});
+
+// creates a new recipe in the database
+app.post("/recipe", async(req,res) => {
+  var {title, ingredients, instructions} = req.body;
+  var user = {id:session.user_id, username:session.username};
+  var success = "unsuccessful";
+
   try {
-    var user_posts = await pool.query("SELECT * FROM meals WHERE poster_id = ?", id);
-    user_posts = user_posts[0]
-    console.log(user_posts)
-  }catch (err) {
+    success = await pool.query("INSERT INTO meals (meal_name, meal_ingredients, meal_instructions, meal_image, poster_id, poster_name) VLAUES (?, ?, ?, ?, ?)" [title, ingredients, instructions, "", user.id, user.username]);
+  } catch (err) {
     console.log(err);
   }
-  res.json({
-    user:{username:user, id:id},
-    posts:{user_posts}
-  });
+  console.log(success);
+  console.log("end of POST recipe")
 })
 
 app.listen(PORT, async () => {

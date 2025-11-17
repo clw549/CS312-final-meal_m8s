@@ -20,6 +20,7 @@ meal_image VARCHAR(255),
 meal_ingredients VARCHAR(1023) not null,
 meal_instructions VARCHAR(1023) not null,
 poster_id int,
+poster_name VARCHAR(255) REFERENCES users(user_name), 
 FOREIGN KEY (poster_id) REFERENCES users(user_id)
 );
 

@@ -1,6 +1,7 @@
 import react, { useEffect } from "react"
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {RecipeForm, UserRecipes} from "./recipes";
 
 export function LoginPage()
 {
@@ -12,6 +13,7 @@ export function LoginPage()
     event.preventDefault();
 
     let user = {password:password, username:username};
+    //api call to check if user exists
     fetch('http://localhost:8000/login', {
       method:"POST",
       headers: {"Content-Type": "application/json"},
@@ -40,11 +42,11 @@ export function SignupPage() {
     event.preventDefault();
 
     let user = {password:password, username:username};
+    //api call to create a user
     fetch('http://localhost:8000/signup', {
       method:"POST",
       headers: {"Content-Type": "application/json"},
       body:JSON.stringify(user),
-      credentials: "include" //COOKIES
     })
     .then((response) => console.log(response))
     .catch((error) => console.log(error))
@@ -72,8 +74,16 @@ export function UserPage() {
       setUsername(data.username)
     })
   })
+
+  function HandleSubmit(event) {
+    event.preventDefault();
+
+
+  }
+
   return (<div>
     <h1> {username} </h1>
-    <form ></form>
+    <RecipeForm />
+    <UserRecipes />
   </div>)
 }

@@ -1,35 +1,29 @@
+import react, { useEffect } from "react"
 import React, { useState } from "react";
-import { pool, app } from "../index.js";
+import { useNavigate } from "react-router-dom";
 
-export default function RecipeForm() {
+export function RecipeForm() {
   //collect data from the form
   const [title, setTitle] = useState("");
   const [ingredients, setIngredients] = useState("");
   const [instructions, setInstructions] = useState("");
 
   async function handleSubmit(event) {
-    event.preventDefault(); // stops the page from refreshing
-    const user = session.user
     console.log(user);
     //build recipe object 
     const recipe = {
       title,
       ingredients,
-      instructions,
+      instructions
     };
-    try {
-      var success = await pool.query("INSERT INTO meals (meal_name, meal_ingredients, meal_instructions, meal_image, poster_id) VLAUES (?, ?, ?, ?, ?)" [title, ingredients, instructions, "", user.id])
-      //log recipe
-      if (success[0]) {
-        console.log("Recipe Created:", recipe);
-      }
-      else {
-        throw "Issue creating recipe ?", success.toString()
-      }
-    } catch (err) {
-      console.log(err);
-    }
+    //api call
+    fetch("http://localhost:8000/recipe", {
+      method:"POST",
+      headers: {"Content-Type": "application/json"}
+    })
+    .then(res => res.json())
   }
+
 
   return (
     <form onSubmit={handleSubmit}>
@@ -64,10 +58,38 @@ export default function RecipeForm() {
   );
 }
 
-export default function UserRecipies() {
+export function UserRecipes() {
+  var recipes;
+  const [recipe_html, recipe_htmlSet] = useState();
+  useEffect(()=>{
+    fetch("http://localhost:8000/user-recipies", {
+      method:"GET",
+      headers: {"Content-Type": "application/json"}
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      recipes = data.recipes;
+      user = data.user;
+      var working_recipes;
+      for (recipe in recipes){
+        working_recipes += Recipe(recipe);
+      }
+      recipe_htmlSet(working_recipes);
+    })
+  })
 
   return (<div>
     <h1>Your Recipes:</h1>
-    <p>todo</p>
+    {recipe_html}
+    <p>end of recipes</p>
   </div>);
 }
+
+export default function Recipe({recipe}) {
+
+  return (<div>
+    <h3>{recipe.title} - {recipe.poster_name}</h3>
+    <p>{recipe.ingredients}</p>
+    <p>{recipe.instructions}</p>
+  </div>)
+} 
