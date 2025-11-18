@@ -22,7 +22,6 @@ export function RecipeForm() {
   })
 
   async function handleSubmit(event) {
-//    event.preventDefault();
     console.log(user);
     //build recipe object 
     const recipe = {
@@ -189,63 +188,7 @@ export function UserRecipes() {
 
   return (<div>
     <h2>Your Recipes:</h2>
-    {recipes.map(recipe => (
-      <div key={recipe.id} recipe={recipe}>
-        <h3>{recipe.meal_name}</h3>
-        <p>{recipe.meal_ingredients}</p>
-        <p>{recipe.meal_instructions}</p>
-        <img src={recipe.meal_image} style={{maxWidth: "300px"}}/>
-        <button onClick={() => startEdit(recipe)} className="editbtn">Edit</button>
-        <button onClick={() => handleDelete(recipe.id)} className="deletebtn">Delete</button>
-      </div> 
-    ))}
-    
-    {isEditing && (
-      <form onSubmit={handleUpdate} className="edit-form">
-      <h2>Edit Recipe</h2>
-
-      <label>Name</label>
-      <input 
-        value={currentRecipe.meal_name}
-        onChange={(event) =>
-          setCurrentRecipe({ ...currentRecipe, meal_name: event.target.value })
-        }
-      />
-
-      <label>Ingredients</label>
-      <textarea 
-        value={currentRecipe.meal_ingredients}
-        onChange={(event) =>
-          setCurrentRecipe({ ...currentRecipe, meal_ingredients: event.target.value })
-        }
-      />
-
-      <label>Instructions</label>
-      <textarea 
-        value={currentRecipe.meal_instructions}
-        onChange={(event) =>
-          setCurrentRecipe({ ...currentRecipe, meal_instructions: event.target.value })
-        }
-      />
-
-      <label>Image</label>
-      <input 
-        value={currentRecipe.meal_image}
-        onChange={(event) =>
-          setCurrentRecipe({ ...currentRecipe, meal_image: event.target.value })
-        }
-      />
-
-    <button type="submit">Save Changes</button>
-    <button type="button" onClick={() => setIsEditing(false)}>
-      Cancel
-    </button>
-  </form>
-)}
-
-
-
-
+    {recipes.map(recipe => (<Recipe key={recipe.id} recipe={recipe} />))}
     <p>end of recipes</p>
   </div>);
 }
