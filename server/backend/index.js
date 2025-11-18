@@ -89,11 +89,19 @@ app.get("/user", async (req,res) => {
 })
 
 app.get("/recipes", async(req,res) => {
-  var recipes = await pool.query("SELECT * FROM meals");
+  // read query parameters
+  const sortField = req.query.sort === 'id' ? 'id' : 'meal_name';
+  const sortOrder = req.query.order === 'desc' ? 'desc' : 'asc';
+
+  // fetch from the DB
+  var recipes = await pool.query(
+    `SELECT * FROM meals ORDER BY ${sortField} ${sortOrder}`
+  );
   recipes = recipes[0];
   console.log(recipes)
   res.json({recipes});
-})
+});
+
 
 //gets recipes off of user id
 app.get("/user-recipes", async(req,res) => {
@@ -117,7 +125,6 @@ app.post("/recipe", async(req,res) => {
   console.log(user)
   var success = "unsuccessful";
 
-
   try {
     success = await pool.query("INSERT INTO meals (meal_name, meal_ingredients, meal_instructions, meal_image, poster_id, poster_name) VALUES (?, ?, ?, ?, ?, ?);", [title, ingredients, instructions, image, user.id, user.username]);
   } catch (err) {
@@ -127,6 +134,61 @@ app.post("/recipe", async(req,res) => {
   console.log("end of POST recipe")
 })
 
+// recipe update (TODO TESTING)
+app.put("/recipes/:id", async (req, res) => {
+  const id = req.params.id;
+  const { meal_name, meal_ingredients, meal_instructions, meal_image } = req.body;
+
+  try {
+    // Update recipe
+    await pool.query(
+      "UPDATE meals SET meal_name = ?, meal_ingredients = ?, meal_instructions = ?, meal_image = ? WHERE id = ?",
+      [meal_name, meal_ingredients, meal_instructions, meal_image, id]
+    );
+
+    // Fetch updated recipe to return
+    const [updated] = await pool.query("SELECT * FROM meals WHERE id = ?", [id]);
+
+    return res.json(updated[0]);  // send updated recipe back
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({ message: "Error updating recipe" });
+  }
+});
+
+/*
+app.put("/recipes/:id", async(req,res) => {
+  var id = req.params.id;
+  var recipe = req.body;
+  console.log(`Updating recipe with ID: ${id}`);
+  console.log(recipe);
+  var {title, ingredients, instructions, image} = recipe; 
+  try {
+    await pool.query("UPDATE meals SET meal_name = ?, meal_ingredients = ?, meal_instructions = ?, meal_image = ? WHERE meal_id = ?", [title, ingredients, instructions, image, id]);
+    res.status(200).send({ message: "Recipe updated successfully" });
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).send({ message: "Error updating recipe" });
+  }
+  res.json(updated)
+});
+*/
+
+// recipe delete (TODO TESTING)
+app.delete("/recipes/:id", async(req,res) => {
+  var id = req.params.id;
+  console.log(`Deleting recipe with ID: ${id}`);
+  try {
+    await pool.query("DELETE FROM meals WHERE id = ?", [id]);
+    res.status(200).send({ message: "Recipe deleted successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: "Error deleting recipe" });
+  } 
+});
+
+// create the server
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
 });
