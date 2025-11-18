@@ -10,7 +10,6 @@ export function LoginPage()
   const [password, setPassword] = useState("");
 
   function HandleSubmit(event) {
-    event.preventDefault();
 
     let user = {password:password, username:username};
     //api call to check if user exists
@@ -39,7 +38,6 @@ export function SignupPage() {
   const [username, setUsername] = useState("");
   
   function HandleSubmit(event) {
-    event.preventDefault();
 
     let user = {password:password, username:username};
     //api call to create a user
@@ -49,11 +47,12 @@ export function SignupPage() {
       body:JSON.stringify(user),
     })
     .then((response) => console.log(response))
+    .then(navigate("/user"))
     .catch((error) => console.log(error))
   }
 
   return (<div>
-    <form method="post" onSubmit={HandleSubmit}>Signup
+    <form onSubmit={HandleSubmit}>Signup
       <label>Username:<input type="text" name="username" required="true" value={username} onChange={(changed) => {setUsername(changed.target.value)}} /></label>
       <label>Password:<input type="password" name="password" required="true"
       value={password} onChange={(changed) => {setPassword(changed.target.value)}}/></label>
@@ -74,13 +73,6 @@ export function UserPage() {
       setUsername(data.username)
     })
   })
-
-  function HandleSubmit(event) {
-    event.preventDefault();
-
-
-  }
-
   return (<div>
     <h1> {username} </h1>
     <RecipeForm />

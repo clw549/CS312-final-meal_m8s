@@ -22,7 +22,6 @@ export function RecipeForm() {
   })
 
   async function handleSubmit(event) {
-    event.preventDefault();
     console.log(user);
     //build recipe object 
     const recipe = {
