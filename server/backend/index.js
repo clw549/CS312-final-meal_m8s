@@ -89,12 +89,13 @@ app.get("/user", async (req,res) => {
 })
 
 //gets recipes off of user id
-app.get("/users-recipes", async(req,res) => {
+app.get("/user-recipes", async(req,res) => {
   var user = {id:session.user_id, username:session.username};
   var recipes = await pool.query("SELECT * FROM meals WHERE poster_id=?", [user.id]);
   console.log(recipes);
 
   recipes = recipes[0];
+  console.log(recipes);
 
   res.json({recipes, user});
   console.log("end of user-recipes")
@@ -102,12 +103,16 @@ app.get("/users-recipes", async(req,res) => {
 
 // creates a new recipe in the database
 app.post("/recipe", async(req,res) => {
-  var {title, ingredients, instructions} = req.body;
+  var recipe = req.body;
+  console.log(recipe);
+  var {title, ingredients, instructions, image} = recipe;
   var user = {id:session.user_id, username:session.username};
+  console.log(user)
   var success = "unsuccessful";
 
+
   try {
-    success = await pool.query("INSERT INTO meals (meal_name, meal_ingredients, meal_instructions, meal_image, poster_id, poster_name) VLAUES (?, ?, ?, ?, ?)" [title, ingredients, instructions, "", user.id, user.username]);
+    success = await pool.query("INSERT INTO meals (meal_name, meal_ingredients, meal_instructions, meal_image, poster_id, poster_name) VALUES (?, ?, ?, ?, ?, ?);", [title, ingredients, instructions, image, user.id, user.username]);
   } catch (err) {
     console.log(err);
   }

@@ -23,8 +23,5 @@ poster_id int,
 poster_name VARCHAR(255) REFERENCES users(user_name), 
 FOREIGN KEY (poster_id) REFERENCES users(user_id)
 );
-
-
 select * from meals;
 select * from users;
-
