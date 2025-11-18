@@ -4,6 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import { SignupPage, LoginPage, UserPage } from '../views/user'
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { Recipes } from '../views/recipes'
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
           <Link to="user"> Profile</Link>
         </nav>
         <Routes>
-          <Route path="/" element={<div/>} />
+          <Route path="/" element={<Recipes />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/user" element={<UserPage />} />

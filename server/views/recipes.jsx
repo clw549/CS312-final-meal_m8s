@@ -67,6 +67,28 @@ export function RecipeForm() {
   );
 }
 
+export function Recipes() {
+  const [recipes, setRecipes] = useState([])
+
+  useEffect(() => {
+    fetch("http://localhost:8000/recipes", {
+      method:"GET"
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      setRecipes(data.recipes);
+      console.log(recipes)
+      console.log(data);
+    }).catch((err) => {console.log(err)})
+  }, [])
+
+  return (<div>
+    <h2>Recipes:</h2>
+    {recipes.map(recipe => (<Recipe key={recipe.id} recipe={recipe} />))}
+    <p>end of recipes</p>
+  </div>);
+}
+
 export function UserRecipes() {
   const [recipes, setRecipes] = useState([]);
   const [user, setUser] = useState();
@@ -103,10 +125,11 @@ export function UserRecipes() {
 }
 
 export default function Recipe({recipe}) {
+  // style can be put into a css file
   return (<div style={{whiteSpace: "pre-wrap" }}> 
-    <h3>{recipe.meal_name} - {recipe.poster_name}</h3>
-    <p>{recipe.meal_ingredients}</p>
-    <p>{recipe.meal_instructions}</p> 
-    <img src={recipe.meal_image}/>
+    <h3>{recipe?.meal_name} - {recipe?.poster_name}</h3>
+    <p>{recipe?.meal_ingredients}</p>
+    <p>{recipe?.meal_instructions}</p> 
+    <img src={recipe?.meal_image}/>
   </div>)
 } 

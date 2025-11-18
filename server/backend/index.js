@@ -88,6 +88,13 @@ app.get("/user", async (req,res) => {
   console.log("user end");
 })
 
+app.get("/recipes", async(req,res) => {
+  var recipes = await pool.query("SELECT * FROM meals");
+  recipes = recipes[0];
+  console.log(recipes)
+  res.json({recipes});
+})
+
 //gets recipes off of user id
 app.get("/user-recipes", async(req,res) => {
   var user = {id:session.user_id, username:session.username};
