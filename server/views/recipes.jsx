@@ -1,13 +1,14 @@
 import react, { useEffect } from "react"
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {Rating} from "./rating.jsx";
 
 export function RecipeForm() {
   //collect data from the form
   const [title, setTitle] = useState("");
   const [ingredients, setIngredients] = useState("");
   const [instructions, setInstructions] = useState("");
-  const [user, setUser] = useState();
+  const [user, setUser] = useState("");
   const [image, setImage] = useState("");
 
   useEffect(() => {
@@ -17,18 +18,25 @@ export function RecipeForm() {
     })
     .then((res) => res.json())
     .then((data) => {
-      setUser(data.username)
+      setUser(data.user.username)
+      console.log(data);
+      console.log(user);
     })
-  })
+  }, [])
 
-  async function handleSubmit(event) {
+  function handleSubmit(event) {
+    event.preventDefault();
     console.log(user);
+    const date = new Date().toISOString().slice(0, 19).replace("T", " ");
+    console.log("handle submit");
+
     //build recipe object 
     const recipe = {
       title,
       ingredients,
       instructions,
-      image
+      image,
+      date
     };
     //api call
     fetch("http://localhost:8000/recipe", {
@@ -37,11 +45,14 @@ export function RecipeForm() {
       body:JSON.stringify(recipe)
     })
     .then(res => res.json())
+    .then(() => {
+      window.location.reload();
+    })
   }
 
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} class="col">
       <h2>Create Recipe</h2>
       <label>Title:<input required={true}
           value={title}
@@ -70,6 +81,7 @@ export function Recipes() {
   const [recipes, setRecipes] = useState([])
   const [sortField, setSortField] = useState('meal_name');
   const [order, setOrder] = useState('asc');
+  const [recipe, setRecipe] = useState(-1);
 
   useEffect(() => {
     fetch(`http://localhost:8000/recipes?sort=${sortField}&order=${order}`, {
@@ -83,8 +95,20 @@ export function Recipes() {
     }).catch((err) => {console.log(err)})
   }, [sortField, order])
 
+  function handleFavorite (event) {
+    event.preventDefault();
+    let id = event.currentTarget.value;
+
+
+    fetch("http://localhost:8000/favorite", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body:JSON.stringify({id:id})
+    })
+  }
+
   return (
-  <div>
+  <div class="col">
     <h2>Recipes:</h2>
     <label>Sort by: </label>
       <select value={sortField} onChange={e => setSortField(e.target.value)}>
@@ -95,12 +119,14 @@ export function Recipes() {
         <option value="asc">Ascending</option>
         <option value="desc">Descending</option>
       </select>
-    {recipes.map(recipe => (
-      <div key={recipe.id} recipe={recipe}>
+    {recipes.map(recipe => ( 
+      <div key={recipe.id} recipe={recipe} class="col">
+        <Rating meal_id={recipe.id} />
         <h3>{recipe.meal_name} - {recipe.poster_name}</h3>
-        <p>{recipe.meal_ingredients}</p>
-        <p>{recipe.meal_instructions}</p>
+        <p><h4>Ingredients:</h4>{recipe.meal_ingredients}</p>
+        <p><h4>Instructions:</h4>{recipe.meal_instructions}</p>
         <img src={recipe.meal_image} style={{maxWidth: "300px"}}/>
+        <button onClick={handleFavorite} name="id" value={recipe.id}>Favorite</button>
       </div> 
       ))}
   </div>
@@ -139,7 +165,6 @@ export function UserRecipes() {
       setRecipes(data.recipes);
       console.log(recipes)
       console.log(data);
-      console.log(working_recipes);
     }).catch((err) => {console.log(err)})
   }, [])
 
@@ -186,7 +211,7 @@ export function UserRecipes() {
   };
 
 
-  return (<div>
+  return (<div class="col">
     <h2>Your Recipes:</h2>
     {recipes.map(recipe => (
       <div key={recipe.id} recipe={recipe}>
@@ -241,10 +266,6 @@ export function UserRecipes() {
     </button>
   </form>
 )}
-
-
-
-
     <p>end of recipes</p>
   </div>);
 }

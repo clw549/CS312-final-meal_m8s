@@ -62,10 +62,14 @@ app.post("/login", async(req,res) => {
       console.log(unsecure_user);
       if (unsecure_user)
       {
-        user = {username:unsecure_user.user_name, id:unsecure_user.user_id}
+        user = {username:unsecure_user.user_name, 
+          id:unsecure_user.user_id,
+          image:unsecure_user.user_image
+        }
         success = true;
         session.username = user.username;
         session.user_id = user.id;
+        session.user_image = user.image
         console.log(session.username);
       }
   } catch (err) {
@@ -77,16 +81,38 @@ app.post("/login", async(req,res) => {
 
 //gets the current user session and sends it as json
 app.get("/user", async (req,res) => {
-  let user = session.username;
   let id = session.user_id;
   console.log("User requested:");
-  console.log(user);
+  var user_db = await pool.query("SELECT * FROM users WHERE user_id = ?", [id]);
+  console.log(user_db);
+  let user = user_db[0][0].user_name;
+  let image = user_db[0][0].user_image
+  let bio = user_db[0][0].user_bio;
+  let user_o = {user, image, id}
+  console.log("user_o:");
+  console.log(user_o);
 
   res.json({
-    user:{username:user, id:id}
+    user:{username:user, id:id, image:image, bio:bio}
   });
   console.log("user end");
 })
+
+app.put("/user-image", async(req,res)=>{
+  let user_id = session.user_id;
+  let user_image = req.body.image;
+  let user_bio = req.body.bio;
+  console.log("putting image");
+  console.log(user_image);
+
+  try {
+    pool.query("UPDATE users SET user_image = ?, user_bio = ? WHERE user_id = ?", 
+      [user_image, user_bio, user_id]);
+    session.user_image = user_image;
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 app.get("/recipes", async(req,res) => {
   // read query parameters
@@ -120,13 +146,16 @@ app.get("/user-recipes", async(req,res) => {
 app.post("/recipe", async(req,res) => {
   var recipe = req.body;
   console.log(recipe);
-  var {title, ingredients, instructions, image} = recipe;
+  var {title, ingredients, instructions, image, date} = recipe;
   var user = {id:session.user_id, username:session.username};
   console.log(user)
   var success = "unsuccessful";
 
   try {
-    success = await pool.query("INSERT INTO meals (meal_name, meal_ingredients, meal_instructions, meal_image, poster_id, poster_name) VALUES (?, ?, ?, ?, ?, ?);", [title, ingredients, instructions, image, user.id, user.username]);
+    success = await pool.query("INSERT INTO meals (meal_name, meal_ingredients, meal_instructions, meal_image, poster_id, poster_name, meal_date) VALUES (?, ?, ?, ?, ?, ?, ?);", [title, ingredients, instructions, image, user.id, user.username, date]);
+    console.log(success)
+    var meal_id = success[0].insertId;
+
   } catch (err) {
     console.log(err);
   }
@@ -188,7 +217,97 @@ app.delete("/recipes/:id", async(req,res) => {
   } 
 });
 
+app.post("/rating", async(req,res) => {
+  var {score, rating, meal_id} = req.body;
+  var user_id = session.user_id;
+  console.log("posting recipe")
+
+  console.log(req.body)
+  console.log("user id:")
+  console.log(user_id)
+
+  try {
+    var success = await pool.query('INSERT INTO rating (score, rating, user_id, meal_id) values (?, ?, ?, ?);',
+      [score, 
+        rating, 
+        user_id,
+        meal_id
+      ]);
+
+  }catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/rating/:meal_id", async(req,res) => {
+  var meal_id = req.params.meal_id;
+  console.log(req.params);
+  console.log(meal_id);
+
+  try {
+    //get the rating from db
+    var rating = await pool.query("select * from rating where meal_id = ?", [meal_id]);
+    console.log(rating)
+    rating = rating[0];
+    var average = 0, count = 0;
+    for (var index in rating) {
+      count +=1;
+      average += rating[index].score;
+    }
+    average = average/count;
+    console.log(average)
+    //send rating to frontend
+    res.json({average:average});
+  } catch (err){
+    console.log(err)
+  }
+});
+
+app.post("/favorite", async(req,res) => {
+  let meal_id = req.body.id;
+  let user_id = session.user_id;
+  try {
+    pool.query("INSERT INTO favorites (meal_id, user_id) VALUES (?, ?)", [
+      meal_id,
+      user_id
+    ])
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/favorites", async (req,res)=>{
+  let user_id = session.user_id;
+  try {
+    var favorites = await pool.query("SELECT * FROM favorites as f join (SELECT * FROM meals) as m on m.id = f.meal_id WHERE f.user_id = ?;", 
+      [
+        user_id
+      ]
+    );
+    favorites = favorites[0];
+    console.log(favorites)
+    res.json({favorites:favorites});
+  }catch (err) {
+    console.log(err);
+  }
+});
+
+app.delete("/favorites", async(req,res) => {
+  console.log(req.body);
+
+  let favorite_id = req.body.favorite_id;
+
+  try {
+    var query_res = await pool.query("DELETE FROM favorites WHERE fave_id = ?;", [favorite_id])
+    console.log(query_res)
+
+  }catch (err) {
+    console.log(err);
+  }
+});
+
 // create the server
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
 });
+

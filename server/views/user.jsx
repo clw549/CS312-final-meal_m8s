@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {RecipeForm, UserRecipes} from "./recipes";
 
+
 export function LoginPage()
 {
   const navigate = useNavigate();
@@ -34,6 +35,8 @@ export function LoginPage()
 }
 
 export function SignupPage() {
+  const navigate = useNavigate();
+
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   
@@ -47,7 +50,7 @@ export function SignupPage() {
       body:JSON.stringify(user),
     })
     .then((response) => console.log(response))
-    .then(navigate("/user"))
+    .then(navigate("/login"))
     .catch((error) => console.log(error))
   }
 
@@ -62,7 +65,10 @@ export function SignupPage() {
 }
 
 export function UserPage() {
-  const [username, setUsername] = useState("")
+  const navigate = useNavigate();
+
+  const [username, setUsername] = useState("");
+  const [user, setUser] = useState({})
   useEffect(() => {
     fetch('http://localhost:8000/user', {
       method:"GET",
@@ -70,12 +76,52 @@ export function UserPage() {
     })
     .then((res) => res.json())
     .then((data) => {
-      setUsername(data.username)
+      console.log(data)
+      setUsername(data.user.username)
+      setUser(data.user)
+      console.print(user)
     })
-  })
-  return (<div>
-    <h1> {username} </h1>
-    <RecipeForm />
-    <UserRecipes />
+  }, [])
+  return (<div class="row">
+    <UserProfile user={user} />
+    <div class="col">
+      <RecipeForm />
+      <UserRecipes />
+    </div>
   </div>)
+}
+
+function UserProfile({user}) {
+  const navigate = useNavigate();
+
+  const [image, setImage] = useState("");
+  const [bio, setBio] = useState("");
+
+  function HandleSubmit(event) {
+    event.preventDefault();
+    let sendJson = {image:image, bio:bio}
+    fetch("http://localhost:8000/user-image", {
+      method:"PUT",
+      headers: {"Content-Type": "application/json"},
+      body:JSON.stringify(sendJson),
+    })
+    .then(navigate("/user"))
+    .catch((error) => {console.log(error)})
+  }
+
+  return (<div class="col">
+    <h1>{user.username}</h1>
+    <p>{user.bio}</p>
+    <img src={user?.image}/>
+    <form onSubmit={HandleSubmit} class="col">
+      <label>Change Profile Picture:
+      <input name="user_image" type="text" value={image}
+      onChange={(changed) => {setImage(changed.target.value)}}></input>
+      </label>
+      <label>Bio:
+        <textarea value={bio}
+      onChange={(changed) => {setBio(changed.target.value)}}></textarea></label>
+      <button type="submit">Submit</button>
+    </form>
+  </div>);
 }

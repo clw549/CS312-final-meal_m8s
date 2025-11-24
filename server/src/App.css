@@ -1,8 +1,38 @@
+:root {
+  --BorderColor: #52528C;
+  --BackgroundColor: #231123;
+  --BackgroundColor2: #000000;
+  --TextColor: #7C9EB2;
+  --AccentColor: #372554;
+
+  color: var(--TextColor);
+  background-image: radial-gradient(var(--BackgroundColor), var(--BackgroundColor2));
+  border-color: #372554;
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
+}
+
+.master {
+  width:100%;
+  flex-direction: column;
+}
+
+.row {
+  align-content: left;
+  display:flex;
+  flex-direction: row;
+}
+
+.col {
+  align-content: left;
+  display:flex;
+  flex-direction: column;
+  flex-wrap:wrap;
 }
 
 .logo {
@@ -39,4 +69,25 @@
 
 .read-the-docs {
   color: #888;
+}
+
+nav {
+  border-width: 2px;
+  border-style: double;
+  padding: .5rem;
+  display:flex;
+  height:fit-content;
+  justify-content:space-evenly;
+}
+
+div {
+  padding:.5rem;
+  display:flex;
+  margin: .2rem;
+  border: var(--BorderColor) .3rem double;
+}
+p {
+  padding: .2rem;
+  margin: .2rem; 
+  text-align: left;
 }
