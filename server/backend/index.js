@@ -114,6 +114,42 @@ app.put("/user-image", async(req,res)=>{
   }
 });
 
+// delete the user
+app.delete("/delete-account", async (req, res) => {
+  let user_id = session.user_id
+
+  if (!user_id) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+
+  try {
+    console.log("HEY!\n");
+    // delete favorites
+    await pool.query("DELETE FROM favorites WHERE user_id = ?", [user_id]);
+
+    // delete ratings
+    await pool.query("DELETE FROM rating WHERE user_id = ?", [user_id]);
+
+    // delete the user's recipes
+    await pool.query("DELETE FROM meals WHERE poster_id = ?", [user_id]);
+
+    // delete the user
+    await pool.query("DELETE FROM users WHERE user_id = ?", [user_id]);
+
+    // destroy session
+    session.destroy((err) => {
+      if (err) {
+        console.log("Session destroy error:", err);
+      }
+
+      res.json({ success: true });
+    });
+  } catch (err) {
+    console.log("DELETE ACCOUNT ERROR:", err);
+    res.status(500).json({ error: "Error deleting account" });
+  }
+});
+
 app.get("/recipes", async(req,res) => {
   // read query parameters
   const sortField = req.query.sort === 'id' ? 'id' : 'meal_name';
@@ -163,7 +199,7 @@ app.post("/recipe", async(req,res) => {
   console.log("end of POST recipe")
 })
 
-// recipe update (TODO TESTING)
+// recipe update
 app.put("/recipes/:id", async (req, res) => {
   const id = req.params.id;
   const { meal_name, meal_ingredients, meal_instructions, meal_image } = req.body;

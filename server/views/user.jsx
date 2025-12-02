@@ -82,13 +82,15 @@ export function UserPage() {
       console.print(user)
     })
   }, [])
-  return (<div class="row">
+  return (
+  <div class="row">
     <UserProfile user={user} />
     <div class="col">
       <RecipeForm />
       <UserRecipes />
     </div>
-  </div>)
+  </div>
+  )
 }
 
 function UserProfile({user}) {
@@ -109,6 +111,25 @@ function UserProfile({user}) {
     .catch((error) => {console.log(error)})
   }
 
+  async function handleDeleteAccount() {
+  if (!confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:8000/delete-account", {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    window.location.href = "/login";
+  } catch (err) {
+    console.log("SERVER DELETE ACCOUNT ERROR:", err);
+    alert("Server error deleting account.");
+  }
+}
+
   return (<div class="col">
     <h1>{user.username}</h1>
     <p>{user.bio}</p>
@@ -123,5 +144,8 @@ function UserProfile({user}) {
       onChange={(changed) => {setBio(changed.target.value)}}></textarea></label>
       <button type="submit">Submit</button>
     </form>
+    <button onClick={handleDeleteAccount}>
+      Delete Account
+    </button>
   </div>);
 }
