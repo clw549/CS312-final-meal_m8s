@@ -294,7 +294,7 @@ app.get("/search", async (req, res) => {
 
   try {
     const [results] = await pool.query(
-      "SELECT * FROM meals WHERE LOWER(meal_name) LIKE CONCAT(LOWER(?), '%') ORDER BY id ASC",
+      "SELECT * FROM meals WHERE LOWER(meal_name) LIKE CONCAT('%', ?, '%')",
       [q]
     );
     console.log("HEY!")

@@ -91,11 +91,12 @@ export function Recipes() {
       try {
         if (submittedSearch && submittedSearch.trim() !== "") {
           const resp = await fetch(
-            `http://localhost:8000/search?q=${encodeURIComponent(submittedSearch.trim())}`
+            `http://localhost:8000/search?q=${submittedSearch.trim()}`
           );
           const data = await resp.json();
           setRecipes(data.recipes || []);
-        } else {
+        } 
+        else {
           // default recipes route (sorted)
           const resp = await fetch(
             `http://localhost:8000/recipes?sort=${sortField}&order=${order}`
@@ -103,7 +104,8 @@ export function Recipes() {
           const data = await resp.json();
           setRecipes(data.recipes || []);
         }
-      } catch (err) {
+      } 
+      catch (err) {
         console.error("Fetch error:", err);
         setRecipes([]);
       }
@@ -111,29 +113,6 @@ export function Recipes() {
 
     fetchData();
   }, [submittedSearch, sortField, order]);
-
-
-    /*
-    if (submittedSearch !== "") {
-      fetch(`http://localhost:8000/search?q=${submittedSearch}`)
-        .then((res) => res.json())
-        .then((data) => setRecipes(data.recipes))
-        .catch((err) => console.log(err));
-      return;
-    }
-
-    // otherwise fetch normally
-    fetch(`http://localhost:8000/recipes?sort=${sortField}&order=${order}`, {
-      method:"GET"
-    })
-    .then((res) => res.json())
-    .then((data) => {
-      setRecipes(data.recipes);
-      console.log(recipes)
-      console.log(data);
-    }).catch((err) => {console.log(err)})
-  }, [sortField, order])
-  */
 
   function handleFavorite (event) {
     event.preventDefault();
