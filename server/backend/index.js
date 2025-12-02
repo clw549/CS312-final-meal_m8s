@@ -185,26 +185,7 @@ app.put("/recipes/:id", async (req, res) => {
   }
 });
 
-/*
-app.put("/recipes/:id", async(req,res) => {
-  var id = req.params.id;
-  var recipe = req.body;
-  console.log(`Updating recipe with ID: ${id}`);
-  console.log(recipe);
-  var {title, ingredients, instructions, image} = recipe; 
-  try {
-    await pool.query("UPDATE meals SET meal_name = ?, meal_ingredients = ?, meal_instructions = ?, meal_image = ? WHERE meal_id = ?", [title, ingredients, instructions, image, id]);
-    res.status(200).send({ message: "Recipe updated successfully" });
-  }
-  catch (err) {
-    console.log(err);
-    res.status(500).send({ message: "Error updating recipe" });
-  }
-  res.json(updated)
-});
-*/
-
-// recipe delete (TODO TESTING)
+// recipe delete
 app.delete("/recipes/:id", async(req,res) => {
   var id = req.params.id;
   console.log(`Deleting recipe with ID: ${id}`);
@@ -306,8 +287,26 @@ app.delete("/favorites", async(req,res) => {
   }
 });
 
+// searchbar api
+app.get("/search", async (req, res) => {
+  console.log("HEY!\n")
+  const q = req.query.q || "";
+
+  try {
+    const [results] = await pool.query(
+      "SELECT * FROM meals WHERE LOWER(meal_name) LIKE CONCAT(LOWER(?), '%') ORDER BY id ASC",
+      [q]
+    );
+    console.log("HEY!")
+    console.log({ recipes: results })
+    res.json({ recipes: results });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database search failed" });
+  }
+});
+
 // create the server
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
 });
-

@@ -81,9 +81,48 @@ export function Recipes() {
   const [recipes, setRecipes] = useState([])
   const [sortField, setSortField] = useState('meal_name');
   const [order, setOrder] = useState('asc');
-  const [recipe, setRecipe] = useState(-1);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [submittedSearch, setSubmittedSearch] = useState("");
 
   useEffect(() => {
+    // if searching, call the search api
+    async function fetchData() {
+      try {
+        if (submittedSearch && submittedSearch.trim() !== "") {
+          const resp = await fetch(
+            `http://localhost:8000/search?q=${encodeURIComponent(submittedSearch.trim())}`
+          );
+          const data = await resp.json();
+          setRecipes(data.recipes || []);
+        } else {
+          // default recipes route (sorted)
+          const resp = await fetch(
+            `http://localhost:8000/recipes?sort=${sortField}&order=${order}`
+          );
+          const data = await resp.json();
+          setRecipes(data.recipes || []);
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setRecipes([]);
+      }
+    }
+
+    fetchData();
+  }, [submittedSearch, sortField, order]);
+
+
+    /*
+    if (submittedSearch !== "") {
+      fetch(`http://localhost:8000/search?q=${submittedSearch}`)
+        .then((res) => res.json())
+        .then((data) => setRecipes(data.recipes))
+        .catch((err) => console.log(err));
+      return;
+    }
+
+    // otherwise fetch normally
     fetch(`http://localhost:8000/recipes?sort=${sortField}&order=${order}`, {
       method:"GET"
     })
@@ -94,11 +133,11 @@ export function Recipes() {
       console.log(data);
     }).catch((err) => {console.log(err)})
   }, [sortField, order])
+  */
 
   function handleFavorite (event) {
     event.preventDefault();
     let id = event.currentTarget.value;
-
 
     fetch("http://localhost:8000/favorite", {
       method: "POST",
@@ -107,18 +146,40 @@ export function Recipes() {
     })
   }
 
+  function handleSearchKey(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      setSubmittedSearch(searchTerm);
+    }
+  }
+
   return (
   <div class="col">
-    <h2>Recipes:</h2>
+    <h2>Recipes: {recipes.length}</h2>
+    <input
+      type="text"
+      placeholder="Search recipes (press Enter)..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      onKeyDown={handleSearchKey}
+      style={{
+        marginBottom: "20px",
+        padding: "6px",
+        fontSize: "16px",
+        width: "250px",
+    }}
+    />
     <label>Sort by: </label>
-      <select value={sortField} onChange={e => setSortField(e.target.value)}>
-        <option value="meal_name">Name</option>
-        <option value="id">Date</option>
-      </select>
-      <select value={order} onChange={e => setOrder(e.target.value)}>
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
+    <select value={sortField} onChange={e => setSortField(e.target.value)}>
+      <option value="meal_name">Name</option>
+      <option value="id">Date</option>
+    </select>
+
+    <select value={order} onChange={e => setOrder(e.target.value)}>
+      <option value="asc">Ascending</option>
+      <option value="desc">Descending</option>
+    </select>
+
     {recipes.map(recipe => ( 
       <div key={recipe.id} recipe={recipe} class="col">
         <Rating meal_id={recipe.id} />
@@ -127,7 +188,7 @@ export function Recipes() {
         <p><h4>Instructions:</h4>{recipe.meal_instructions}</p>
         <img src={recipe.meal_image} style={{maxWidth: "300px"}}/>
         <button onClick={handleFavorite} name="id" value={recipe.id}>Favorite</button>
-      </div> 
+      </div>
       ))}
   </div>
   );
@@ -210,9 +271,8 @@ export function UserRecipes() {
     setIsEditing(false);
   };
 
-
   return (<div class="col">
-    <h2>Your Recipes:</h2>
+    <h2>Your Recipes: {recipes.length}</h2>
     {recipes.map(recipe => (
       <div key={recipe.id} recipe={recipe}>
         <h3>{recipe.meal_name}</h3>
